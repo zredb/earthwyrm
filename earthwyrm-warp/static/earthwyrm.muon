@@ -5,6 +5,9 @@ bind_address: 127.0.0.1:3030
 # Root path for static files
 document_root: /var/local/earthwyrm
 
+# Postgres database connection string
+db_conn_string: postgres://Meteodyn:Meteodyn@localhost:2345/earthwyrm
+
 # Tile properties
 #
 # Tile extent; width and height

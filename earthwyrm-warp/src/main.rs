@@ -12,10 +12,10 @@ use r2d2_postgres::PostgresConnectionManager;
 use serde_derive::Serialize;
 use std::fs;
 use std::net::SocketAddr;
+use warp::{Filter, filters, Rejection, Reply};
 use warp::filters::BoxedFilter;
 use warp::http::StatusCode;
 use warp::reject::{custom, not_found};
-use warp::{filters, Filter, Rejection, Reply};
 
 #[derive(Serialize)]
 struct ErrorMessage {
@@ -24,6 +24,8 @@ struct ErrorMessage {
 }
 
 fn main() {
+    let mut args = env::args();
+    let config_path = args.next().unwrap();
     env_logger::builder().format_timestamp(None).init();
     let res = do_main("/etc/earthwyrm/earthwyrm.muon");
     if let Err(e) = &res {
@@ -34,10 +36,7 @@ fn main() {
 
 fn do_main(file: &str) -> Result<(), Box<dyn std::error::Error>> {
     let wyrm_cfg: WyrmCfg = muon_rs::from_str(&fs::read_to_string(file)?)?;
-    let username = whoami::username();
-    // Format path for unix domain socket -- not worth using percent_encode
-    let uds = format!("postgres://{:}@%2Frun%2Fpostgresql/earthwyrm", username);
-    let config = uds.parse()?;
+    let config = wyrm_cfg.db_conn_string.parse()?;
     run_server(config, wyrm_cfg)?;
     Ok(())
 }
@@ -61,7 +60,7 @@ fn run_server(
 fn tile_route(
     config: Config,
     wyrm: Wyrm,
-) -> BoxedFilter<(impl Reply,)> {
+) -> BoxedFilter<(impl Reply, )> {
     let manager = PostgresConnectionManager::new(config, NoTls);
     let pool = r2d2::Pool::new(manager).unwrap();
     warp::get2()

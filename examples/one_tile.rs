@@ -10,6 +10,7 @@ use std::fs::File;
 const MUON: &str = &r#"
 bind_address:
 document_root:
+db_conn_string: postgres://Meteodyn:Meteodyn@localhost:2345/earthwyrm
 tile_extent: 256
 edge_extent: 6
 query_limit: 500000
@@ -32,11 +33,11 @@ fn write_tile(
 ) -> Result<(), Box<dyn std::error::Error>> {
     let wyrm_cfg: WyrmCfg = muon_rs::from_str(MUON)?;
     let wyrm = Wyrm::from_cfg(&wyrm_cfg)?;
-    let username = whoami::username();
-    // Format path for unix domain socket -- not worth using percent_encode
-    let uds = format!("postgres://{:}@%2Frun%2Fpostgresql/earthwyrm", username);
+    // let username = whoami::username();
+    // let uds = format!("postgres://{:}@%2Frun%2Fpostgresql/earthwyrm", username);
+    //let uds = wyrm_cfg.db_conn_string.parse()?;
     let mut file = File::create("./one_tile.mvt")?;
-    let mut conn = Client::connect(&uds, NoTls)?;
+    let mut conn = Client::connect(&wyrm_cfg.db_conn_string, NoTls)?;
     let tid = TileId::new(x, y, z)?;
     wyrm.fetch_tile(&mut file, &mut conn, "tile", tid)?;
     Ok(())

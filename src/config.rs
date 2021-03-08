@@ -1,9 +1,10 @@
+use std::fmt;
+
 // config.rs
 //
 // Copyright (c) 2019-2020  Minnesota Department of Transportation
 //
 use serde_derive::Deserialize;
-use std::fmt;
 
 /// Configuration for Earthwyrm tile layers.
 #[derive(Debug, Deserialize)]
@@ -12,6 +13,8 @@ pub struct WyrmCfg {
     pub bind_address: String,
     /// Document root to server static documents
     pub document_root: String,
+    /// Postgres database connection string
+    pub db_conn_string: String,
     /// Tile extent; width and height
     pub tile_extent: u32,
     /// Extent outside tile edges
